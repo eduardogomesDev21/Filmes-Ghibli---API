@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magia do Studio Ghibli</title>
+    <!-- Fonte minimalista e arredondada (Quicksand) -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fdf6e3;       /* Pastel soft yellow/cream */
+            --text-color: #5c5c5c;     /* Soft dark gray */
+            --card-bg: #ffffff;
+            --accent-color: #f5e6e8;   /* Pastel pink */
+            --secondary-color: #d5e1df; /* Pastel mint green */
+            --title-color: #bfa19c;    /* Soft brownish pink */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--title-color);
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.03);
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            color: #8c8c8c;
+            font-weight: 500;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.08);
+            border-color: var(--accent-color);
+        }
+
+        .card-image-wrapper {
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-image {
+            transform: scale(1.08); /* Efeito suave na imagem */
+        }
+
+        .card-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            background: linear-gradient(to bottom, #ffffff, #fafafa);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--title-color);
+        }
+
+        .card-subtitle {
+            font-size: 1rem;
+            color: #a3a3a3;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .card-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #7a7a7a;
+            flex-grow: 1;
+            margin-bottom: 25px;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #888;
+            padding-top: 20px;
+            border-top: 2px dashed #f0f0f0;
+        }
+
+        .tag {
+            background-color: var(--secondary-color);
+            color: #557b74;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .card:hover .tag {
+            background-color: #c4d6d3;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.4rem;
+            color: var(--title-color);
+            width: 100%;
+            grid-column: 1 / -1;
+            padding: 60px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Responsividade pra telas menores */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .container { gap: 25px; }
+            .card-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Filmes do Studio Ghibli</h1>
+        <p class="subtitle">Descubra a magia de cada história</p>
+    </header>
+
+    <div class="container" id="movies-container">
+        <div class="loading">Despertando os espíritos... Um momento mágico! ✨</div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById("movies-container");
+
+            // Fazendo a requisição para o nosso backend Flask local na porta 5000
+            fetch('http://127.0.0.1:5000/api/filmes')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na rede: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(movies => {
+                    container.innerHTML = ''; // Limpa o loading depois de carregar
+
+                    movies.forEach(movie => {
+                        const card = document.createElement("div");
+                        card.className = "card";
+
+                        // A API do Ghibli retorna 'image' com os posters de alta qualidade
+                        const imageSrc = movie.image || 'https://via.placeholder.com/300x200?text=Sem+Imagem';
+                        const title = movie.title;
+                        const originalTitle = movie.original_title;
+                        const description = movie.description;
+                        const releaseDate = movie.release_date;
+                        const director = movie.director;
+
+                        card.innerHTML = `
+                            <div class="card-image-wrapper">
+                                <img src="${imageSrc}" alt="${title}" class="card-image" loading="lazy">
+                            </div>
+                            <div class="card-content">
+                                <h2 class="card-title">${title}</h2>
+                                <h3 class="card-subtitle">${originalTitle} • ${director}</h3>
+                                <p class="card-description">${description}</p>
+                                <div class="card-footer">
+                                    <span class="tag">Ano: ${releaseDate}</span>
+                                </div>
+                            </div>
+                        `;
+
+                        container.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar filmes:', error);
+                    container.innerHTML = `
+                        <div class="loading" style="color: #d18d8d;">
+                            Oops! A magia sumiu. 🌸<br><br>
+                            <span style="font-size: 1rem; color: #888;">Certifique-se de estar rodando o arquivo "Back.py" no terminal!</span>
+                        </div>
+                    `;
+                });
+        });
+    </script>
+</body>
+</html>
