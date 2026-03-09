@@ -30,6 +30,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: background-color 0.8s ease; /* Transição suave para o fundo */
         }
 
         header {
@@ -63,18 +64,43 @@
             background-color: var(--card-bg);
             border-radius: 30px;
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex;
             flex-direction: column;
-            border: 3px solid transparent;
             position: relative;
+            transform-style: preserve-3d;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 30px;
+            padding: 3px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            z-index: 10;
         }
 
         .card:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.08);
-            border-color: var(--accent-color);
+            transform: translateY(-15px) scale(1.03) rotateX(5deg) rotateY(-5deg);
+            box-shadow: -10px 20px 40px rgba(0, 0, 0, 0.1), 10px 20px 40px rgba(0, 0, 0, 0.05);
+            z-index: 2;
+        }
+
+        .card:hover::before {
+            opacity: 1;
         }
 
         .card-image-wrapper {
@@ -88,11 +114,13 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.5s ease;
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            filter: brightness(0.95);
         }
 
         .card:hover .card-image {
-            transform: scale(1.08); /* Efeito suave na imagem */
+            transform: scale(1.15); /* Zoom mais fluido na imagem */
+            filter: brightness(1.05);
         }
 
         .card-content {
@@ -100,7 +128,10 @@
             display: flex;
             flex-direction: column;
             flex-grow: 1;
-            background: linear-gradient(to bottom, #ffffff, #fafafa);
+            background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,1) 100%);
+            position: relative;
+            z-index: 5;
+            transition: background 0.5s ease;
         }
 
         .card-title {
@@ -141,16 +172,39 @@
 
         .tag {
             background-color: var(--secondary-color);
-            color: #557b74;
-            padding: 6px 16px;
+            color: #4a6c65;
+            padding: 8px 18px;
             border-radius: 20px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.85rem;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
         .card:hover .tag {
-            background-color: #c4d6d3;
+            background-color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Efeitos de Glow customizados por filme, adicionados via JS */
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 0%, var(--movie-color, rgba(255,255,255,0)) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            z-index: 10;
+        }
+
+        .card:hover::after {
+            opacity: 0.8;
         }
 
         .loading {
@@ -190,6 +244,59 @@
     </div>
 
     <script>
+        // Mapeamento de cores mágicas inspiradas em cada filme!
+        const movieColors = {
+            "Castle in the Sky": "#87CEEB",       // Azul céu
+            "Grave of the Fireflies": "#FF8C00",    // Laranja fogo/vagalume
+            "My Neighbor Totoro": "#98FB98",        // Verde floresta pastel
+            "Kiki's Delivery Service": "#DDA0DD",   // Roxo/Plum do laço
+            "Only Yesterday": "#F0E68C",            // Amarelo nostalgia
+            "Porco Rosso": "#FA8072",               // Vermelho avião (Salmão)
+            "Pom Poko": "#DEB887",                  // Marrom terra pastel
+            "Whisper of the Heart": "#FFB6C1",      // Rosa romance
+            "Princess Mononoke": "#8FBC8F",         // Verde místico escuro
+            "My Neighbors the Yamadas": "#FFDAB9",  // Pêssego aquarela
+            "Spirited Away": "#FF69B4",             // Rosa flor / Místico
+            "The Cat Returns": "#FFA07A",           // Laranja suave
+            "Howl's Moving Castle": "#9370DB",      // Roxo magia negra pastel
+            "Tales from Earthsea": "#B0C4DE",       // Cinza/Azul aço dragão
+            "Ponyo": "#FF7F50",                     // Coral mar / Ponyo
+            "Arrietty": "#3CB371",                  // Verde folha chão
+            "From Up on Poppy Hill": "#F08080",     // Coral / Rosa
+            "The Wind Rises": "#E0FFFF",            // Ciano claro vento
+            "The Tale of the Princess Kaguya": "#FFE4E1", // Rosa pálido lua
+            "When Marnie Was There": "#87CEFA",     // Azul claro maré
+            "The Red Turtle": "#CD5C5C",            // Vermelho tartaruga índico
+            "Earwig and the Witch": "#BA55D3",      // Orquídea bruxa
+            "The Boy and the Heron": "#4682B4"      // Azul garça
+        };
+
+        // Adiciona um efeito de 3D ao mover o mouse dentro do card
+        function handleMouseMove(e, card) {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; // x position within the element.
+            const y = e.clientY - rect.top;  // y position within the element.
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            const rotateX = ((y - centerY) / centerY) * -10; // max 10 deg
+            const rotateY = ((x - centerX) / centerX) * 10;  // max 10 deg
+
+            card.style.transform = `translateY(-15px) scale(1.03) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        }
+
+        function handleMouseLeave(card) {
+            // Reset to hover state without 3D mouse tracking
+            card.style.transform = `translateY(-15px) scale(1.03) rotateX(5deg) rotateY(-5deg)`;
+            setTimeout(() => {
+                // If it really left and isn't hovering anymore, reset entirely
+                if (!card.matches(':hover')) {
+                    card.style.transform = '';
+                }
+            }, 50);
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const container = document.getElementById("movies-container");
 
@@ -215,6 +322,26 @@
                         const description = movie.description;
                         const releaseDate = movie.release_date;
                         const director = movie.director;
+
+                        // Cor personalizada baseada no filme
+                        const themeColor = movieColors[title] || "rgba(255,255,255,0.5)";
+                        card.style.setProperty('--movie-color', themeColor);
+                        // Trocar a cor da tag no hover com base no filme e expandir a aura pro site!
+                        card.addEventListener('mouseenter', () => {
+                            card.querySelector('.tag').style.backgroundColor = themeColor;
+                            
+                            // Adicionando uma opacidade ao código hex gerando um brilho no fundo inteiro
+                            // Convertendo o hex pra fica mais difuso como aura (ex: + "40" para 25% opacidade)
+                            document.body.style.backgroundColor = themeColor + "66"; // Transparente e suave
+                        });
+                        card.addEventListener('mouseleave', () => {
+                            card.querySelector('.tag').style.backgroundColor = '';
+                            document.body.style.backgroundColor = ''; // Retorna ao fundo original do var(--bg-color)
+                        });
+
+                        // 3D Parallax Effect Interativo
+                        card.addEventListener('mousemove', (e) => handleMouseMove(e, card));
+                        card.addEventListener('mouseleave', () => handleMouseLeave(card));
 
                         card.innerHTML = `
                             <div class="card-image-wrapper">
